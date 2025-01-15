@@ -1,3 +1,36 @@
+# Libraries
+node_modules
+
+# Private files (may contain sensitive data)
+.env
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Config files
+*.json
+
 # Logs
 logs
 *.log
