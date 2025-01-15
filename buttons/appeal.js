@@ -16,7 +16,7 @@ module.exports = {
 			AND type = 'ban'
 		`).get(interaction.user.id);
 		if (!banData) {
-			embed.description = '🚩 You are not currently banned, please DM modmail if you cannot view the server';
+			embed.description = '🚩 You are not currently banned, please DM ModMail if you cannot view the server';
 			return interaction.editReply({ embeds: [embed] });
 		}
 

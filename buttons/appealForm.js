@@ -175,13 +175,30 @@ module.exports = {
 			const channel = client.channels.cache.get("1279861284111650950") ?? await client.channels.fetch("1279861284111650950").catch(() => null);
 			const user = await client.users.cache.get(cacheData.userID) ?? await client.users.fetch(cacheData.userID).catch(() => null);
 
+			const banData = client.db.prepare(`
+				SELECT *
+				FROM infractions
+				WHERE userID = ?
+				AND type = 'ban'
+			`).get(interaction.user.id);
+
 			embed.author = {
 				name: user.tag,
 				icon_url: user.displayAvatarURL({ dynamic: true, size: 256 })
 			}
 
+			const mod = await client.users.cache.get(banData?.modID) ?? await client.users.fetch(banData?.modID).catch(() => null);
+			const modName = mod ? mod.tag : 'Unknown';
+
 			for (const [ questionID, questionData ] of Object.entries(cacheData.questions)) {
 				embed.description += `${questionData.emoji} **${questionData.question}**\n\`\`\`\n${questionData.answer || '\u200b'}\n\`\`\`\n`;
+			}
+
+			embed.description += `\n**Ban Reason**: ${banData?.reason || 'No reason provided'}\n**Banned By**: ${modName}`;
+
+			embed.footer = {
+				text: `${user.tag} | user ID: ${user.id}`,
+				icon_url: user.displayAvatarURL({ dynamic: true, size: 256 })
 			}
 
 			const staffButton = {
@@ -192,14 +209,14 @@ module.exports = {
 						style: 2,
 						custom_id: `staff-appeal_${appealID}_approved`,
 						label: 'Approve',
-						emoji: '✅'
+						emoji: client.config.YES_EMOJI
 					},
 					{
 						type: 2,
 						style: 2,
 						custom_id: `staff-appeal_${appealID}_denied`,
 						label: 'Deny',
-						emoji: '❌'
+						emoji: client.config.NO_EMOJI
 					}
 				]
 			}
