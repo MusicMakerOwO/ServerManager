@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('sendappeal')
-		.setDescription('Send the ban appeal messaqge'),
+		.setDescription('Send the ban appeal message'),
 	execute: async function(interaction, client) {
 		await interaction.deferReply({ ephemeral: true });
 

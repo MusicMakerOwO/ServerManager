@@ -200,9 +200,9 @@ Reason : \`${reason}\`
 Timestamp: <t:${~~(Date.now() / 1000)}:d>
 
 **Punishments**
-${priorPunishments.map(punish => `✅ - ${punish.name}`).join('\n')}
+${priorPunishments.map(punish => `${client.config.YES_EMOJI} - ${punish.name}`).join('\n')}
 💥 - ${currentPunishment.name}
-${futurePunishments.map(punish => `❌ - ${punish.name}`).join('\n')}
+${futurePunishments.map(punish => `${client.config.NO_EMOJI} - ${punish.name}`).join('\n')}
 
 **Note** : Only warnings within the last 30 days are counted`
 			}
@@ -217,15 +217,15 @@ Reason : \`${reason}\`
 Timestamp: <t:${~~(Date.now() / 1000)}:d>
 
 **Punishments**
-${priorPunishments.map(punish => `✅ - ${punish.name}`).join('\n')}
+${priorPunishments.map(punish => `${client.config.YES_EMOJI} - ${punish.name}`).join('\n')}
 💥 - ${currentPunishment.name}
-${futurePunishments.map(punish => `❌ - ${punish.name}`).join('\n')}
+${futurePunishments.map(punish => `${client.config.NO_EMOJI} - ${punish.name}`).join('\n')}
 
 **Note** : Only warnings within the last 30 days are counted`
 			}
 
 			user.send({ embeds: [userEmbed] }).catch(() => {
-				modEmbed.description += '\n\n🚩 I was not able to send this user a DM!';
+				modEmbed.description += `\n\n🚩 I was not able to send ${user.globalName ?? user.username} a DM!`;
 			});
 
 			if (warnIndex > 0) {

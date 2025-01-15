@@ -20,7 +20,7 @@ module.exports = {
 			.setDescription('Whether the user can appeal the ban')
 		),
 	async execute(interaction, client) {
-		// dont actually ban, remove all roles and give banned role
+		// don't actually ban, remove all roles and give banned role
 
 		await interaction.deferReply();
 
@@ -48,7 +48,7 @@ module.exports = {
 **Reason** : \`${reason}\`
 
 **What does this mean?**
-You are not fully banned from the server but you have been restricted to sending messages or joining voice channels. You can still view rules, DM modmail, and contact staff members. You are welcome to appeal the ban however it is not garunteed that it will be lifted. Leaving the server will not lift the ban, adding an alt will result in a permanant ban with no appeal. If you have any questions or concerns, please contact a staff member or DM modmail.`
+You are not fully banned from the server but you have been restricted to sending messages or joining voice channels. You can still view rules, DM ModMail, and contact staff members. You are welcome to appeal the ban however it is not guaranteed that it will be lifted. Leaving the server will not lift the ban, adding an alt will result in a permanent ban with no appeal. If you have any questions or concerns, please contact a staff member or DM ModMail.`
 		}
 
 
@@ -56,8 +56,8 @@ You are not fully banned from the server but you have been restricted to sending
 
 		if (user.id === client.user.id) return await interaction.editReply({ content: 'Fuck you' });
 		if (user.id === interaction.guild.ownerId) return await interaction.editReply({ content: 'Why would you do that...?' });
-		if (user.id === interaction.user.id) return await interaction.editReply({ content: 'Don\'t ban yourself, Null' });
-		if (member.roles.highest.position >= interaction.member.roles.highest.position) return await interaction.editReply({ content: 'You cannot ban someone with a role higher or equal to your own' });
+		if (user.id === interaction.user.id) return await interaction.editReply({ content: 'Don\'t ban yourself, Null (RIP Null and his non-existent activity)' });
+		if (member.roles.highest.position >= interaction.member.roles.highest.position) return await interaction.editReply({ content: 'You cannot ban someone with a role higher or equal to your own you donut' });
 		
 		const currentlyBanned = await client.db.prepare(`
 			SELECT *
@@ -79,7 +79,7 @@ You are not fully banned from the server but you have been restricted to sending
 			}
 			embed.description = `
 Ban reason has been updated
-**Can Appeal** :  ${canAppeal ? '✅' : '❌'}
+**Can Appeal** :  ${canAppeal ? `${client.config.YES_EMOJI}` : `${client.config.NO_EMOJI}`}
 **Reason** : \`${reason}\``;
 
 			await interaction.editReply({ embeds: [embed] });
@@ -88,7 +88,7 @@ Ban reason has been updated
 				// dm the user of the updates
 				DMEmbed.description = `
 ⚠️ Your ban has been updated in ${interaction.guild.name}
-**Can Appeal** :  ${canAppeal ? '✅' : '❌'}
+**Can Appeal** :  ${canAppeal ? `${client.config.YES_EMOJI}` : `${client.config.NO_EMOJI}`}
 **New Reason** : \`${reason}\``;
 				await user.send({ embeds: [DMEmbed] }).catch(() => {});
 			}
@@ -103,7 +103,7 @@ Ban reason has been updated
 		`).run(user.id, interaction.user.id, 'ban', reason, +canAppeal);
 
 		embed.description = `
-**Can Appeal** :  ${canAppeal ? '✅' : '❌'}
+**Can Appeal** :  ${canAppeal ? `${client.config.YES_EMOJI}` : `${client.config.NO_EMOJI}`}
 **Reason** : \`${reason}\``; 
 
 		if (!member) {

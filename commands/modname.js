@@ -28,9 +28,9 @@ module.exports = {
 
 		try {
 			await client.nickname(interaction.guild.id, user.id, user.username);
-			embed.description = `✅ Successfully reset ${user}'s display name`;
+			embed.description = `${client.config.YES_EMOJI} Successfully reset ${user}'s display name`;
 		} catch (error) {
-			embed.description = `❌ Failed to reset ${user}'s display name`;
+			embed.description = `${client.config.NO_EMOJI} Failed to reset ${user}'s display name`;
 		}
 
 		await interaction.editReply({ embeds: [embed] }).catch(() => {});

@@ -5,5 +5,8 @@
 	"BANNED_ROLE_ID": "1276928630928441354",
 
 	"OWNER_TOKEN": "musics token lol",
-	"TOTP_SECRET": "my totp secret"
+	"TOTP_SECRET": "my totp secret",
+
+	"YES_EMOJI": "<:yes:1082157328297627728>",
+	"NO_EMOJI": "<:no:1082157398711603311>"
 }

@@ -175,7 +175,7 @@ module.exports = class AuditListener {
 		const adminRole = guild.roles.cache.get("1198108552238202880");
 		const msgEmbed = {
 			color: 0xFF0000,
-			title: "Crtical Activity",
+			title: "Critical Activity",
 			description: message,
 			timestamp: new Date()
 		}
