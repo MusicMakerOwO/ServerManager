@@ -169,7 +169,7 @@ module.exports = class AuditListener {
 		this.#client.on('tokenReset', async (user) => {
 			await this.#NotifyStaff(`${user.username} (${user.id}) has reset my token`);
 			this.#client.destroy();
-			await ResetToken();
+			// await ResetToken();
 			process.exitCode = 1;
 		});
 	}
