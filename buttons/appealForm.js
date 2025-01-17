@@ -1,11 +1,37 @@
 module.exports = {
 	customID: 'appealForm',
 	execute: async function(interaction, client, [ action ] = ['view']) {
+		const user = interaction.user;
+		const banData = client.db.prepare(`
+			SELECT *
+			FROM infractions
+			WHERE userID = ?
+			AND type = 'ban'
+		`).get(user.id);
+
+		const mod = await client.users.cache.get(banData?.modID) ?? await client.users.fetch(banData?.modID).catch(() => null);
+		const modName = mod ? mod.tag : 'Unknown';
+		const appealID = banData?.infractionID || 'Unknown';
 
 		const embed = {
-			description: '',
-			color: 0x2196f3
-		}
+			color: 0x89CFF0,
+			author: {
+				name: `Appeal from ${user.tag}`,
+				icon_url: user.displayAvatarURL({ dynamic: true, size: 256 })
+			},
+			title: `Appeal Request #${appealID}`,
+			description: `**Ban Information**
+		• Case Moderator: ${modName}
+		• Reason: ${banData?.reason || 'No reason provided'}
+		
+		**Appeal Questions**\n`,
+			fields: [],
+			timestamp: new Date(),
+			footer: {
+				text: `User ID: ${user.id}`,
+				icon_url: user.displayAvatarURL({ dynamic: true, size: 256 })
+			}
+		};
 
 		/*
 		client.cache.set(`appeal-${interaction.user.id}`, {
@@ -190,14 +216,14 @@ module.exports = {
 			const mod = await client.users.cache.get(banData?.modID) ?? await client.users.fetch(banData?.modID).catch(() => null);
 			const modName = mod ? mod.tag : 'Unknown';
 
-			for (const [ questionID, questionData ] of Object.entries(cacheData.questions)) {
-				embed.description += `${questionData.emoji} **${questionData.question}**\n\`\`\`\n${questionData.answer || '\u200b'}\n\`\`\`\n`;
+			for (const [questionID, questionData] of Object.entries(cacheData.questions)) {
+				embed.description += `\n${questionData.emoji} **${questionData.question}**\n\`\`\`${questionData.answer || 'No answer provided'}\`\`\``;
 			}
 
 			embed.description += `\n**Ban Reason**: ${banData?.reason || 'No reason provided'}\n**Banned By**: ${modName}`;
 
 			embed.footer = {
-				text: `${user.tag} | user ID: ${user.id}`,
+				text: `${user.tag} | User ID: ${user.id}`,
 				icon_url: user.displayAvatarURL({ dynamic: true, size: 256 })
 			}
 

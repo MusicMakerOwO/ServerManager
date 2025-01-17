@@ -75,7 +75,8 @@ const VALID_EVENTS = [
 	'roleDelete',
 	'roleUpdate',
 	'guildUpdate',
-	'messageDelete'
+	'messageDelete',
+	'messageBulkDelete',
 ]
 
 module.exports = class AuditListener {
@@ -115,7 +116,7 @@ module.exports = class AuditListener {
 		const lastAuditLog = await this.#fetchLastAuditLog(auditType);
 		if (!lastAuditLog) return;
 		if (this.eventIsActive(eventName)) return;
-		await this.#NotifyStaff(notificationMessage);
+		// await this.#NotifyStaff(notificationMessage);
 		this.#client.destroy();
 		// await ResetToken();
 		process.exitCode = 1;
@@ -162,10 +163,13 @@ module.exports = class AuditListener {
 		this.#client.on('messageDelete', async (message) => {
 			this.#EventCallback('messageDelete', AUDIT_LOG_TYPES.MESSAGE_DELETE, `I have been compromised and deleted a message : ${message.content}`);
 		});
+		this.#client.on('messageBulkDelete', async (messages) => {
+			this.#EventCallback('messageBulkDelete', AUDIT_LOG_TYPES.MESSAGE_BULK_DELETE, `I have been compromised and bulk deleted messages`);
+		})
 		this.#client.on('tokenReset', async (user) => {
 			await this.#NotifyStaff(`${user.username} (${user.id}) has reset my token`);
 			this.#client.destroy();
-			await ResetToken();
+			// await ResetToken();
 			process.exitCode = 1;
 		});
 	}
@@ -194,5 +198,4 @@ module.exports = class AuditListener {
 		this.#activeEvents.set(salt, event);
 		setTimeout(this.#activeEvents.delete.bind(this.#activeEvents, salt), duration);
 	}
-
 }
