@@ -30,10 +30,10 @@ module.exports = {
 		`).pluck().get(appealData.infractionID);
 
 		const userEmbed = {
-			color: action === 'approved' ? 0x00ff00 : 0xff0000,
+			color: action === 'approved' ? 0x00ff00 : 0x8B0000,
 			title: 'Appeal Information',
 			description: `
-Your appeal for case ID \`${appealData.infractionID}\` has been \`${action}\`
+		Your appeal for case ID \`${appealData.infractionID}\` has been \`${action}\`
 
 **User ID**: ${userID}
 **Infraction ID**: ${appealData.infractionID}
@@ -61,7 +61,7 @@ Your appeal for case ID \`${appealData.infractionID}\` has been \`${action}\`
 **Moderator** : ${interaction.user.username}
 **Timestamp** : <t:${Math.floor(Date.now() / 1000)}:D>\n\n` + currentEmbed.description;
 
-		currentEmbed.color = action === 'approved' ? 0x00ff00 : 0xff0000;
+		currentEmbed.color = action === 'approved' ? 0x00ff00 : 0x8B0000;
 
 		await interaction.editReply({
 			embeds: [currentEmbed],
