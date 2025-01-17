@@ -1,8 +1,19 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const silencedBulkDelete = require('../moderation/purgeMessages');
 
+const FILTERS = {
+    bot: m => m.author.bot,
+    user: m => !m.author.bot,
+    embed: m => m.embeds.length > 0,
+    file: m => m.attachments.size > 0,
+    link: m => /https?:\/\/[^\s]+/.test(m.content),
+    image: m => m.attachments.some(a => a.contentType?.startsWith('image/')) || m.embeds.some(e => e.type === 'image'),
+    text: m => m.content.length > 0 && !m.attachments.size && !m.embeds.length
+};
+
 module.exports = {
-    userPerms: [ "ManageMessages" ],
+    cooldown: 10,
+    userPerms: ["ManageMessages"],
     data: new SlashCommandBuilder()
         .setName("purge")
         .setDescription("Bulk delete messages from this channel (Moderators/Admins)")
@@ -28,110 +39,87 @@ module.exports = {
             .setRequired(false))
         .addStringOption(x => x.setName("contains")
             .setDescription("Delete messages containing specific text")
+            .setRequired(false))
+        .addIntegerOption(x => x.setName("age")
+            .setDescription("Maximum age of messages to delete (in hours)")
+            .setMinValue(1)
+            .setMaxValue(336) 
             .setRequired(false)),
 
     async execute(interaction) {
         const amount = interaction.options.getInteger("amount");
         const filter = interaction.options.getString("filters");
         const target = interaction.options.getUser("target");
-        const contains = interaction.options.getString("contains");
-
+        const contains = interaction.options.getString("contains")?.toLowerCase();
+        const maxAge = interaction.options.getInteger("age");
+        
         await interaction.deferReply({ ephemeral: true });
 
         try {
-            let messages = await interaction.channel.messages.fetch({ limit: amount });
-            let filterDescription = [];
+            const messages = await interaction.channel.messages.fetch({ 
+                limit: amount,
+                cache: false
+            });
 
-            if (target) {
-                messages = messages.filter(m => m.author.id === target.id);
-                filterDescription.push(`User: ${target.tag}`);
-            }
+            let skipped = 0;
+            const filters = [];
+            const cutoff = maxAge ? Date.now() - (maxAge * 3600000) : 0;
 
-            if (contains) {
-                messages = messages.filter(m => m.content.toLowerCase().includes(contains.toLowerCase()));
-                filterDescription.push(`Contains: "${contains}"`);
-            }
-
-            if (filter) {
-                switch (filter) {
-                    case 'bot':
-                        messages = messages.filter(m => m.author.bot);
-                        filterDescription.push('Type: Bot Messages');
-                        break;
-                    case 'user':
-                        messages = messages.filter(m => !m.author.bot);
-                        filterDescription.push('Type: User Messages');
-                        break;
-                    case 'embed':
-                        messages = messages.filter(m => m.embeds.length > 0);
-                        filterDescription.push('Type: Embeds');
-                        break;
-                    case 'file':
-                        messages = messages.filter(m => m.attachments.size > 0);
-                        filterDescription.push('Type: Files');
-                        break;
-                    case 'link':
-                        messages = messages.filter(m => m.content.match(/https?:\/\/[^\s]+/));
-                        filterDescription.push('Type: Links');
-                        break;
-                    case 'image':
-                        messages = messages.filter(m => 
-                            m.attachments.some(attach => 
-                                attach.contentType?.startsWith('image/')) || 
-                            m.embeds.some(embed => embed.type === 'image')
-                        );
-                        filterDescription.push('Type: Images');
-                        break;
-                    case 'text':
-                        messages = messages.filter(m => 
-                            m.content.length > 0 && 
-                            m.attachments.size === 0 && 
-                            m.embeds.length === 0
-                        );
-                        filterDescription.push('Type: Text Only');
-                        break;
+            const toDelete = messages.filter(m => {
+                if ((maxAge && m.createdTimestamp < cutoff) ||
+                    (target && m.author.id !== target.id) ||
+                    (contains && !m.content.toLowerCase().includes(contains)) ||
+                    (filter && !FILTERS[filter](m))) {
+                    skipped++;
+                    return false;
                 }
-            }
+                return true;
+            });
+
+            if (!toDelete.size) throw { code: 'NO_MESSAGES' };
+
+            target && filters.push(`User: ${target.tag}`);
+            contains && filters.push(`Contains: "${contains}"`);
+            filter && filters.push(`Type: ${filter}`);
+            maxAge && filters.push(`Age: <${maxAge} hours`);
 
             const deleted = await silencedBulkDelete(
-                interaction.client, 
-                interaction.channel.id, 
-                messages
+                interaction.client,
+                interaction.channel.id,
+                toDelete
             );
 
-            const embed = new EmbedBuilder()
-            .setColor('#89CFF0')
-            .setTitle('Message Purge Results')
-            .setDescription(`**Details**
-        Messages Deleted: ${deleted.size}
-        Messages Requested: ${amount}
-        
-        **Location**
-        Channel: ${interaction.channel}
-        Moderator: ${interaction.user}
-        
-        **Filters**
-        ${filterDescription.length ? filterDescription.join('\n') : 'None'}`)
-            .setTimestamp();
+            await interaction.editReply({
+                embeds: [new EmbedBuilder()
+                    .setColor('#89CFF0')
+                    .setTitle('Message Purge Results')
+                    .setDescription(`**Details**
+Messages Deleted: ${deleted.size}
+Messages Skipped: ${skipped}
+Messages Requested: ${amount}
 
-            await interaction.editReply({ embeds: [embed], ephemeral: true });
+**Location**
+Channel: ${interaction.channel}
+Moderator: ${interaction.user}
+
+**Filters**
+${filters.length ? filters.join('\n') : 'None'}`)
+                    .setFooter({ text: `Purge completed in ${Date.now() - interaction.createdTimestamp}ms` })
+                    .setTimestamp()]
+            });
 
         } catch (error) {
-            console.error(error);
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('❌ Error')
-                .setDescription([
-                    'An error occurred while trying to purge messages.',
-                    '',
-                    'Possible reasons:',
-                    '• Messages are older than 14 days',
-                    '• No messages matched the filter criteria',
-                    '• Missing permissions'
-                ].join('\n'))
-                .setTimestamp();
-
-            await interaction.editReply({ embeds: [errorEmbed], ephemeral: true });
+            await interaction.editReply({
+                embeds: [new EmbedBuilder()
+                    .setColor('#ff0000')
+                    .setTitle('❌ Error')
+                    .setDescription(error.code === 'NO_MESSAGES' ? 'No messages matched your filter criteria.' :
+                        error.code === 'MISSING_PERMISSIONS' ? 'I don\'t have permission to delete messages in this channel.' :
+                        error.code === 50013 ? 'I don\'t have sufficient permissions to perform this action.' :
+                        error.code === 50034 ? 'Some messages are too old to be bulk deleted.' :
+                        'An unknown error occurred.')
+                    .setTimestamp()]
+            });
         }
     }
 };
