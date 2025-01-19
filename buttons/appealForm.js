@@ -21,8 +21,8 @@ module.exports = {
 			},
 			title: `Appeal Request #${appealID}`,
 			description: `**Ban Information**
-		• Case Moderator: ${modName}
-		• Reason: ${banData?.reason || 'No reason provided'}
+		> • Case Moderator : ${modName}
+		> • Reason : ${banData?.reason || 'No reason provided'}
 		
 		**Appeal Questions**\n`,
 			fields: [],
@@ -95,7 +95,7 @@ module.exports = {
 
 		const cacheData = client.cache.get(`appeal-${interaction.user.id}`);
 		if (!cacheData) {
-			embed.description = '🚩 You do not have an active appeal, if this is a mistake please restart the process';
+			embed.description = '🚩 You do not have an active appeal, if this is a mistake please restart the process.';
 			await interaction.deferUpdate().catch(() => {});
 			return interaction.editReply({ embeds: [embed], components: [] });
 		}
@@ -201,26 +201,14 @@ module.exports = {
 			const channel = client.channels.cache.get("1279861284111650950") ?? await client.channels.fetch("1279861284111650950").catch(() => null);
 			const user = await client.users.cache.get(cacheData.userID) ?? await client.users.fetch(cacheData.userID).catch(() => null);
 
-			const banData = client.db.prepare(`
-				SELECT *
-				FROM infractions
-				WHERE userID = ?
-				AND type = 'ban'
-			`).get(interaction.user.id);
-
 			embed.author = {
 				name: user.tag,
 				icon_url: user.displayAvatarURL({ dynamic: true, size: 256 })
 			}
 
-			const mod = await client.users.cache.get(banData?.modID) ?? await client.users.fetch(banData?.modID).catch(() => null);
-			const modName = mod ? mod.tag : 'Unknown';
-
 			for (const [questionID, questionData] of Object.entries(cacheData.questions)) {
 				embed.description += `\n${questionData.emoji} **${questionData.question}**\n\`\`\`${questionData.answer || 'No answer provided'}\`\`\``;
 			}
-
-			embed.description += `\n**Ban Reason**: ${banData?.reason || 'No reason provided'}\n**Banned By**: ${modName}`;
 
 			embed.footer = {
 				text: `${user.tag} | User ID: ${user.id}`,
