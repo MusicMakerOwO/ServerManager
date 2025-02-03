@@ -13,7 +13,7 @@ const FILTERS = {
 
 module.exports = {
     cooldown: 10,
-    userPerms: ["ManageMessages"],
+	roles: ['1198108657846583336'],
     data: new SlashCommandBuilder()
         .setName("purge")
         .setDescription("Bulk delete messages from this channel (Moderators/Admins)")

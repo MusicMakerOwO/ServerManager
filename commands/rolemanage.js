@@ -1,9 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
-    userPerms: ["ManageRoles"],
-    botPerms: ["ManageRoles"],
-    data: new SlashCommandBuilder()
+    roles: ['1198108657846583336'],
+	data: new SlashCommandBuilder()
         .setName("role")
         .setDescription("Manage user roles")
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)

@@ -1,7 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js'); 
+const { roles } = require('./ban');
 
 module.exports = {
-	userPerms: [ 'ModerateMembers' ],
+	roles: ['1198108657846583336'],
     data: new SlashCommandBuilder()
     .setName('mute')
     .setDescription('Mute/timeout a member')

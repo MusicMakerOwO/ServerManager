@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
+	roles: ['1198108657846583336'],
 	data: new SlashCommandBuilder()
 		.setName('sendappeal')
 		.setDescription('Send the ban appeal message'),

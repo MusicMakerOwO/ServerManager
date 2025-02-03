@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
-	// userPerms: ['BanMembers'],
+	roles: ['1198108657846583336'],
 	data: new SlashCommandBuilder()
 		.setName('ban')
 		.setDescription('Ban a user from the server')

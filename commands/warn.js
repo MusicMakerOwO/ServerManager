@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { PermissionsBitField: { Flags: Permissions } } = require('discord.js');
+const { roles } = require('./rolemanage');
 
 /*
 2nd warn - 10 minute mute
@@ -45,6 +46,7 @@ const PunishEnums = [
 ];
 
 module.exports = {
+	roles: ['1198108657846583336'],
 	data: new SlashCommandBuilder()
     .setName('warn')
     .setDescription('Manage a users warnings')
@@ -200,9 +202,9 @@ Reason : \`${reason}\`
 Timestamp: <t:${~~(Date.now() / 1000)}:d>
 
 **Punishments**
-${priorPunishments.map(punish => `${client.config.YES_EMOJI} - ${punish.name}`).join('\n')}
+${priorPunishments.map(punish => `✅ - ${punish.name}`).join('\n')}
 💥 - ${currentPunishment.name}
-${futurePunishments.map(punish => `${client.config.NO_EMOJI} - ${punish.name}`).join('\n')}
+${futurePunishments.map(punish => `❌ - ${punish.name}`).join('\n')}
 
 **Note** : Only warnings within the last 30 days are counted`
 			}
@@ -217,9 +219,9 @@ Reason : \`${reason}\`
 Timestamp: <t:${~~(Date.now() / 1000)}:d>
 
 **Punishments**
-${priorPunishments.map(punish => `${client.config.YES_EMOJI} - ${punish.name}`).join('\n')}
+${priorPunishments.map(punish => `✅ - ${punish.name}`).join('\n')}
 💥 - ${currentPunishment.name}
-${futurePunishments.map(punish => `${client.config.NO_EMOJI} - ${punish.name}`).join('\n')}
+${futurePunishments.map(punish => `❌ - ${punish.name}`).join('\n')}
 
 **Note** : Only warnings within the last 30 days are counted`
 			}

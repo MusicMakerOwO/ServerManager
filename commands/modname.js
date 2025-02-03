@@ -1,8 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
-	userPerms: [ 'ManageNicknames' ],
-	botPerms: [ 'ManageNicknames' ],
+	roles: ['1198108657846583336'],
 	data: new SlashCommandBuilder()
 		.setName('modname')
 		.setDescription('Reset a user\'s display name to their username.')

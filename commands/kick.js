@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-    userPerms: ['ModerateMembers'],
+    roles: ['1198108657846583336'],
     data: new SlashCommandBuilder()
         .setName('kick')
         .setDescription('Kicks specified user.')
