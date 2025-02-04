@@ -20,8 +20,6 @@ module.exports = {
 			.setDescription('Whether the user can appeal the ban')
 		),
 	async execute(interaction, client) {
-		// don't actually ban, remove all roles and give banned role
-
 		await interaction.deferReply();
 
 		if (!interaction.member.permissions.has('BanMembers')) return await interaction.editReply('✨ Only Moderators/Admins can ban people within this server');
@@ -29,6 +27,28 @@ module.exports = {
 		const user = interaction.options.getUser('user');
 		const reason = interaction.options.getString('reason') ?? 'No reason provided';
 		const canAppeal = interaction.options.getBoolean('can_appeal') ?? true;
+
+		if (canAppeal === false) {
+			try {
+				await interaction.guild.bans.create(user.id, {
+					reason: `${reason} (No Appeal) - Banned by ${interaction.user.tag}`,
+					// deleteMessageDays: 0
+				});
+				
+				const embed = {
+					description: `🔨 Permanently banned ${user.username} (${user.id})\n\n**Can Appeal** : ${client.config.NO_EMOJI}\n**Reason** : \`${reason}\``,
+					author: {
+						icon_url: user.displayAvatarURL({ dynamic: true, size: 512 }),
+					},
+					timestamp: new Date(),
+					color: 0xc62828
+				};
+
+				return await interaction.editReply({ embeds: [embed] });
+			} catch (error) {
+				console.error('Failed to create permanent ban:', error);
+			}
+		}
 		
 		const embed = {
 			title: '',
@@ -48,16 +68,15 @@ module.exports = {
 **Reason** : \`${reason}\`
 
 **What does this mean?**
-You are not fully banned from the server but you have been restricted to sending messages or joining voice channels. You can still view rules, DM ModMail, and contact staff members. You are welcome to appeal the ban however it is not guaranteed that it will be lifted. Leaving the server will not lift the ban, adding an alt will result in a permanent ban with no appeal. If you have any questions or concerns, please contact a staff member or DM ModMail.`
+You are not fully banned from the server but you have been restricted to sending messages or joining voice channels. You can still view rules, DM ModMail, and contact staff members. ${canAppeal ? 'You are welcome to appeal the ban however it is not guaranteed that it will be lifted.' : 'This ban cannot be appealed.'} Leaving the server will not lift the ban, adding an alt will result in a permanent ban with no appeal. If you have any questions or concerns, please contact a staff member or DM ModMail.`
 		}
-
 
 		const member = interaction.guild.members.cache.get(user.id) ?? await interaction.guild.members.fetch(user.id).catch(() => null);
 
 		if (user.id === client.user.id) return await interaction.editReply({ content: 'Fuck you' });
 		if (user.id === interaction.guild.ownerId) return await interaction.editReply({ content: 'Why would you do that...?' });
 		if (user.id === interaction.user.id) return await interaction.editReply({ content: 'Don\'t ban yourself, Null (RIP Null and his non-existent activity)' });
-		if (member.roles.highest.position >= interaction.member.roles.highest.position) return await interaction.editReply({ content: 'You cannot ban someone with a role higher or equal to your own you donut' });
+		if (member?.roles.highest.position >= interaction.member.roles.highest.position) return await interaction.editReply({ content: 'You cannot ban someone with a role higher or equal to your own you donut' });
 		
 		const currentlyBanned = await client.db.prepare(`
 			SELECT *
@@ -69,9 +88,10 @@ You are not fully banned from the server but you have been restricted to sending
 			// update ban reason
 			await client.db.prepare(`
 				UPDATE infractions
-				SET reason = ?
+				SET reason = ?,
+				    can_appeal = ?
 				WHERE infractionID = ?
-			`).run(reason, currentlyBanned.infractionID);
+			`).run(reason, +canAppeal, currentlyBanned.infractionID);
 
 			embed.title = `${user.username} is already banned`
 			embed.author = {
@@ -94,7 +114,6 @@ Ban reason has been updated
 			}
 
 			return;
-
 		}
 
 		client.db.prepare(`
